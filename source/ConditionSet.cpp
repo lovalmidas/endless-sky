@@ -19,6 +19,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "DataNode.h"
 #include "DataWriter.h"
 #include "Logger.h"
+#include "Random.h"
 
 #include <algorithm>
 #include <cmath>
@@ -54,6 +55,7 @@ namespace
 			{ConditionSet::ExpressionOp::DIV, [](int64_t a, int64_t b) { return b ? a / b : numeric_limits<int64_t>::max(); }},
 			{ConditionSet::ExpressionOp::MAX, [](int64_t a, int64_t b) { return max(a, b); }},
 			{ConditionSet::ExpressionOp::MIN, [](int64_t a, int64_t b) { return min(a, b); }},
+			{ConditionSet::ExpressionOp::RND, [](int64_t a, int64_t b) { return min(a, b) + Random::Int(abs(a - b + 1)); }},
 		};
 
 		auto it = opMap.find(op);
@@ -89,6 +91,7 @@ namespace
 		{ "or", { ConditionSet::ExpressionOp::OR, INFIX_OPERATOR | SINGLE_PARENT }},
 		{ "max", { ConditionSet::ExpressionOp::MAX, FUNCTION_OPERATOR | SINGLE_PARENT }},
 		{ "min", { ConditionSet::ExpressionOp::MIN, FUNCTION_OPERATOR | SINGLE_PARENT}},
+		{ "rand", { ConditionSet::ExpressionOp::RND, FUNCTION_OPERATOR | SINGLE_PARENT}},
 	};
 
 
@@ -427,7 +430,7 @@ int64_t ConditionSet::Evaluate() const
 	}
 
 	// If we have an accumulator function and children, then let's use the accumulator on the children.
-	// MAX and MIN are also handled by the accumulator.
+	// MAX, MIN and RND are also handled by the accumulator.
 	BinFun accumulatorOp = Op(expressionOperator);
 	if(accumulatorOp != nullptr && !children.empty())
 		return accumulate(next(children.begin()), children.end(), children[0].Evaluate(),
@@ -483,6 +486,11 @@ bool ConditionSet::ParseFromStart(const DataNode &node)
 		if(node.Token(0) == "max")
 		{
 			expressionOperator = ExpressionOp::MAX;
+			return ParseChildren(node);
+		}
+		if(node.Token(0) == "rand")
+		{
+			expressionOperator = ExpressionOp::RND;
 			return ParseChildren(node);
 		}
 	}
@@ -589,6 +597,7 @@ bool ConditionSet::Optimize(const DataNode &node)
 		case ExpressionOp::MOD:
 		case ExpressionOp::MAX:
 		case ExpressionOp::MIN:
+		case ExpressionOp::RND:
 			// TODO: Optimize arithmetic operators.
 			break;
 

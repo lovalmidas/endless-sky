@@ -47,6 +47,7 @@ public:
 		MOD, ///< Modulo ( % ) by the second and later sub-expressions on the first one.
 		MIN, ///< 'min' operator, returns the minimum value over all children.
 		MAX, ///< 'max' operator, returns the maximum value over all children.
+		RND, ///< 'rand' operator, returns a random value between sub-expressions.
 
 		// Boolean equality operators, return 0 or 1
 		EQ, ///< Tests for equality ( == ).
