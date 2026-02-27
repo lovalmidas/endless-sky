@@ -244,7 +244,7 @@ void LocationFilter::Save(DataWriter &out) const
 			out.BeginChild();
 			{
 				for(const Government *government : governments)
-					if (government == &sourceGovernment)
+					if(government == &sourceGovernment)
 						out.Write("source");
 					else
 						out.Write(government->TrueName());
@@ -678,13 +678,13 @@ void LocationFilter::LoadChild(const DataNode &child, const set<const System *> 
 	else if(key == "government")
 	{
 		for(int i = valueIndex; i < child.Size(); ++i)
-			if (child.Token(i) == "source")
+			if(child.Token(i) == "source")
 				governments.insert(&sourceGovernment);
 			else
 				governments.insert(GameData::Governments().Get(child.Token(i)));
 		for(const DataNode &grand : child)
 			for(int i = 0; i < grand.Size(); ++i)
-				if (grand.Token(i) == "source")
+				if(grand.Token(i) == "source")
 					governments.insert(&sourceGovernment);
 				else
 					governments.insert(GameData::Governments().Get(grand.Token(i)));
