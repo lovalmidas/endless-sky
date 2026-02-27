@@ -184,7 +184,10 @@ public:
 	// - ACCEPT, DECLINE, and DEFER if it is from PlayerInfo::MissionCallback(), as in this case the mission already
 	// used the UI to create a conversation or dialog that triggered the callback.
 	// - DAILY is called in PlayerInfo::AdvanceDate and never has access to the UI.
-	enum Trigger {COMPLETE, OFFER, ACCEPT, DECLINE, FAIL, ABORT, DEFER, VISIT, STOPOVER, WAYPOINT, DAILY, DISABLED};
+	// - INIT is called during mission loading and also never have access to the UI. These are called
+	// while the job or mission list is being generated. They allow player conditions to be updated between jobs. In
+	// a way this allows some information to be passed between different jobs at generation stage
+	enum Trigger {COMPLETE, OFFER, ACCEPT, DECLINE, FAIL, ABORT, DEFER, VISIT, STOPOVER, WAYPOINT, DAILY, DISABLED, INIT};
 	bool Do(Trigger trigger, PlayerInfo &player, UI *ui = nullptr, const std::shared_ptr<Ship> &boardingShip = nullptr);
 
 	// Get a list of NPCs associated with this mission. Every time the player
@@ -272,6 +275,7 @@ private:
 	double passengerProb = 0.;
 	int64_t paymentApparent = 0;
 
+	ConditionSet toInit;
 	ConditionSet toOffer;
 	ConditionSet toAccept;
 	ConditionSet toComplete;

@@ -2456,7 +2456,10 @@ Mission *PlayerInfo::BoardingMission(const shared_ptr<Ship> &ship)
 			if(availableBoardingMissions.back().IsFailed())
 				availableBoardingMissions.pop_back();
 			else
+			{
+				availableBoardingMissions.back().Do(Mission::INIT, *this);
 				return &availableBoardingMissions.back();
+			}
 		}
 
 	return nullptr;
@@ -2478,6 +2481,7 @@ void PlayerInfo::CreateEnteringMissions()
 				availableEnteringMissions.pop_back();
 			else
 			{
+				availableEnteringMissions.back().Do(Mission::INIT, *this);
 				hasPriorityMissions |= availableEnteringMissions.back().HasPriority();
 				nonBlockingMissions += availableEnteringMissions.back().IsNonBlocking();
 			}
@@ -2502,6 +2506,7 @@ void PlayerInfo::CreateTransitionMissions()
 				availableTransitionMissions.pop_back();
 			else
 			{
+				availableTransitionMissions.back().Do(Mission::INIT, *this);
 				hasPriorityMissions |= availableTransitionMissions.back().HasPriority();
 				nonBlockingMissions += availableTransitionMissions.back().IsNonBlocking();
 			}
@@ -4535,6 +4540,7 @@ void PlayerInfo::CreateMissions()
 			if(newMission.IsFailed())
 				continue;
 			newMission.RecalculateTrackedSystems();
+			newMission.Do(Mission::INIT, *this);
 			if(!mission.IsAtLocation(Mission::JOB))
 			{
 				hasPriorityMissions |= newMission.HasPriority();

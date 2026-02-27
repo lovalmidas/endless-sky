@@ -107,6 +107,8 @@ namespace {
 				return "on daily";
 			case Mission::Trigger::DISABLED:
 				return "on disabled";
+			case Mission::Trigger::INIT:
+				return "on init";
 			default:
 				return "unknown trigger";
 		}
@@ -267,6 +269,8 @@ void Mission::Load(const DataNode &node, const ConditionsStore *playerConditions
 				toFail.Load(child, playerConditions);
 			else if(child.Token(1) == "accept")
 				toAccept.Load(child, playerConditions);
+			else if(child.Token(1) == "init")
+				toInit.Load(child, playerConditions);
 			else
 				child.PrintTrace("Skipping unrecognized attribute:");
 		}
@@ -368,6 +372,7 @@ void Mission::Load(const DataNode &node, const ConditionsStore *playerConditions
 				{"waypoint", WAYPOINT},
 				{"daily", DAILY},
 				{"disabled", DISABLED},
+				{"init", INIT},
 			};
 			auto it = trigger.find(child.Token(1));
 			if(it != trigger.end())
@@ -497,6 +502,15 @@ void Mission::Save(DataWriter &out, const string &tag) const
 		if(repeat != 1)
 			out.Write("repeat", repeat);
 
+		if(!toInit.IsEmpty())
+		{
+			out.Write("to", "init");
+			out.BeginChild();
+			{
+				toInit.Save(out);
+			}
+			out.EndChild();
+		}
 		if(!toOffer.IsEmpty())
 		{
 			out.Write("to", "offer");
@@ -1315,6 +1329,10 @@ bool Mission::Do(Trigger trigger, PlayerInfo &player, UI *ui, const shared_ptr<S
 		++player.Conditions()[trueName + ": done"];
 	}
 
+	// Initialization will never call show a dialog
+	if(trigger == INIT)
+		ui = nullptr;
+
 	// "Jobs" should never show dialogs when offered, nor should they call the
 	// player's mission callback.
 	if(trigger == OFFER && location == JOB)
@@ -1504,6 +1522,10 @@ Mission Mission::Instantiate(const PlayerInfo &player, const shared_ptr<Ship> &b
 	result.waypoints = waypoints;
 	result.completionFilter = completionFilter;
 	result.markedSystems = markedSystems;
+	// If toInit fails, then the mission will not be considered for selection.
+	if (!toInit.IsEmpty() && !toInit.Test())
+		return result;
+
 	// Handle waypoint systems that are chosen randomly.
 	const System *const sourceSystem = player.GetSystem();
 	for(const LocationFilter &filter : waypointFilters)
@@ -1621,6 +1643,7 @@ Mission Mission::Instantiate(const PlayerInfo &player, const shared_ptr<Ship> &b
 
 	// Copy the conditions. The offer conditions must be copied too, because they
 	// may depend on a condition that other mission offers might change.
+	result.toInit = toInit;
 	result.toOffer = toOffer;
 	result.toAccept = toAccept;
 	result.toComplete = toComplete;
