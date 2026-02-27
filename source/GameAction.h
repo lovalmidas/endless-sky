@@ -19,6 +19,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "ConditionAssignments.h"
 #include "Message.h"
 #include "ShipManager.h"
+#include "ConditionSet.h"
 
 #include <cstdint>
 #include <map>
@@ -79,11 +80,13 @@ public:
 
 private:
 	struct Debt {
-		Debt(int64_t amount) : amount(amount) {}
-
 		int64_t amount = 0;
 		std::optional<double> interest;
 		int term = 365;
+
+		ConditionSet amountCondition;
+		ConditionSet interestCondition;
+		ConditionSet termCondition;
 	};
 
 
@@ -95,11 +98,15 @@ private:
 
 	std::map<const GameEvent *, std::pair<int, int>> events;
 	std::vector<ShipManager> giftShips;
+	std::map<const Outfit *, ConditionSet> giftOutfitsCondition;
 	std::map<const Outfit *, int> giftOutfits;
 
+	ConditionSet paymentBase;
+	ConditionSet paymentMultiplier;
+	ConditionSet fineBase;
 	int64_t payment = 0;
-	int64_t paymentMultiplier = 0;
 	int64_t fine = 0;
+
 	std::vector<Debt> debt;
 
 	std::optional<std::string> music;
