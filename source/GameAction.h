@@ -17,9 +17,9 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include "BookEntry.h"
 #include "ConditionAssignments.h"
+#include "ConditionSet.h"
 #include "Message.h"
 #include "ShipManager.h"
-#include "ConditionSet.h"
 
 #include <cstdint>
 #include <map>
